@@ -11,19 +11,17 @@
 
 = Parte 1 - Emulação de ponto flutuante
 == Contexto
-Podem ser encontrado no mercado diversos processares sem unidade de ponto flutuante,
+Podem ser encontrados no mercado diversos processadores que não dispõe de unidade de ponto flutuante,
 seja por uma questão de custo, área ou limite energético.
-Entretanto o ´float´ e ´double´ são definido no C, assim sendo os códigos contendo 
-esse tipo precisam rodas em todas as arquiteturas. Como isso é possivel?
+Entretanto o ´float´ e ´double´ são definidos na linguagem C, assim sendo os códigos contendo 
+esse tipo precisam rodar em todas as arquiteturas. Como isso é possivel?
 
-Para investigar vamos tentar compilar o seguindo código para uma arquitetura sem ponto flutuante,
-no caso do RISC-V isso é representado pela ausência da letra `f` e `d` da ISA,
-por se tratar de uma ISA modular ela tem a base de inteiros (como rv32i ou rv64i),
-e cada letra representa um novo conjunto de intruções @wiki:RISC-V.
+Para investigar o que ocorre, vamos tentar compilar o seguinte código para uma arquitetura sem suporte a ponto flutuante no conjunto de instruções.
+No caso do RISC-V, o conjunto de instruções de base não contém essas instruções e isso é representado pela ausência da letra `f` e `d` da ISA.
+Por se tratar de uma ISA modular ela tem a base de inteiros (como rv32i ou rv64i), e cada letra representa um novo conjunto de intruções @wiki:RISC-V.
 
-Para isso vamos usar o #link("https://godbolt.org/")[godbolt], 
-com o compilador `RISC-V (64-bits) gcc` com as flags `-O2 -march=rv64i -mabi=lp64`,
-em `-march` definimos a arquitetura alvo como um processador RISC-V sem nunhuma extensão
+Assim, vamos usar o #link("https://godbolt.org/")[godbolt], com o compilador `RISC-V (64-bits) gcc` com as flags `-O2 -march=rv64i -mabi=lp64`.
+Em `-march` definimos a arquitetura alvo como um processador RISC-V sem nunhuma extensão, 
 e em `-mabi` definimos a interface binária para também não usar ponto flutuante.
 
 Agora digitando o seguinte código:
@@ -46,19 +44,19 @@ sum(float, float):
         addi    sp,sp,16
         jr      ra
 ```
-Conforme esperado o processador não realiza a soma, 
-e delegou a função `__addsf3` que recebe `y` e `x` 
+Conforme esperado, não há uma instrução de soma a ser executada pelo processador, 
+que delegou a função `__addsf3`. Essa função recebe `y` e `x` 
 nos registradores `a0` e `a1` (observe que ele precisa
 alterar os parametros, uma vez que a soma de pontos flutuantes
 #link("https://stackoverflow.com/a/24446382")[não é cumutativa]).
 
 A função `__addsf3` faz parte da biblioteca de runtime de C,
 que permite a portabilidade da linguagem em diversos sistemas.
-As outras rotinas podem ser encontradas
+As outras rotinas podem ser encontradas em
 #link("https://gcc.gnu.org/onlinedocs/gccint/Soft-float-library-routines.html")[aqui].
 
 == Tarefa
-Impremente as seguintes funções de uma biblioteca de ponto flutuante:
+Implemente as seguintes funções de uma biblioteca de ponto flutuante:
 - `mfloat floatsisf (mint i)` - converte um inteiro para a representação ponto flutuante
 - `mint fixsfsi (mfloat a)` - converte um ponto flutuante para a representação inteira
 - `mfloat negsf2 (mfloat a)` - retorna o negado de a (Dica: é apenas um bit flip)
@@ -74,7 +72,7 @@ typedef mfloat uint32_t
 ```
 
 O código não pode conter a palavra reservada 
-`float` ou `double` e será checado estáticamente.
+`float` ou `double` e será checado estaticamente.
 Palavras derivadas (acrecidas de caracteres antes ou após) 
 como `float_valor`, `valor_float`, são permitidas.
 
@@ -82,7 +80,7 @@ Seu código não precisa tratar casos os casos de `NaN`, `Infinity` ou underflow
 
 Você pode encontrar um template com alguns casos de teste
 #link("https://github.com/guissalustiano/oac1-trabalho3/tree/main/float_lib")[no repositorio do experimento].
-Vocẽ também pode contribuir com mais casos de teste publicos via o github.
+Você também pode contribuir com mais casos de teste publicos via o github.
 
 = Parte 2 - Benchmark SIMD
 == Aplicações
@@ -168,12 +166,12 @@ Matrix conv2d(Matrix img, Matrix kernel) {
 }
 ```
 Os valores da imagem só podem variar entre 0 e 255, sendo utilizado o tipo `uini16_t` para facilitar o tratamento de overflow.
-Esse é o tipico exemplo onde o uso de SIMD pode ser muito util,
+Esse é o tipico exemplo onde o uso de SIMD pode ser muito útil,
 pois podemos realizar a soma de 4 pixels ao mesmo tempo em um registrador de 128 bits.
 
 == Tarefa
-Nos iremos realizar uma comparativo de desempenho entre a implementação basica e com SIMD,
-para isso #link("https://github.com/guissalustiano/oac1-trabalho3/tree/main/simd_benchmarking")[baixe o código do experimento]
+Iremos realizar um comparativo de desempenho entre a implementação básica e com SIMD.
+Para isso #link("https://github.com/guissalustiano/oac1-trabalho3/tree/main/simd_benchmarking")[baixe o código do experimento]
 disponivel na pasta `simd_benchmarking`.
 
 Compare os códigos `edge_float.c`, `edge_int.c` e `edge_simd.c` e identifique as diferenças 
